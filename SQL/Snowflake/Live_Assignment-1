@@ -1,0 +1,90 @@
+--1. Load the given dataset into snowflake with a primary key to Order Date column.
+Query : create or replace table Sales_Data
+		(order_id varchar(60) primary key,
+		order_date string,
+		ship_date string,
+		ship_mode varchar(60),
+		customer_name varchar(60),
+		segment varchar(60),
+		state varchar (60),
+		country varchar(60),
+		market varchar(60),
+		region varchar(60),
+		product_id varchar(60),
+		category varchar(60),
+		sub_category varchar(60),
+		product_name string,
+		sales number(10,3),
+		quantity int,
+		discount float,
+		profit float,
+		shipping_cost float,
+		order_priority varchar(60),
+		year int);
+
+--Now load the data in the table
+Databases > Sales_Data > Load the .csv file
+
+-- 2. Change the Primary key to Order Id Column.
+Query : alter table SALES_DATA
+		drop primary key;
+
+		alter table SALES_DATA
+		ADD PRIMARY KEY (Order_date);
+
+-- 3. Check the data type for Order date and Ship date and mention in what data type
+it should be?
+Query : describe table SALES_DATA;
+		select to_char(to_date(order_date),'DD-MM-YYYY') as Order_date_format, 
+			to_char(to_date(ship_date),'DD-MM-YYYY') as Ship_date_format
+		from SALES_DATA;
+		
+
+--4. Create a new column called order_extract and extract the number after the last ‘–‘from Order ID column.
+Query : Select *,Substring(Order_id,9) as Order_extract
+		from SALES_DATA;
+
+--5. Create a new column called Discount Flag and categorize it based on discount, Use ‘Yes’ if the discount is greater than zero else ‘No’.
+Query : Select *,
+			CASE WHEN discount>0 THEN 'YES'
+				 ELSE 'No'
+			END as Discount_flag
+		from SALES_DATA;
+		
+--6. Create a new column called process days and calculate how many days it takes for each order id to process from the order to its shipment.
+Query : select datediff('DAY',order_date,ship_date) as Process_days 
+		from sales_data;
+		
+--7. Create a new column called Rating and then based on the Process dates give rating like given below.
+	--a. If process days less than or equal to 3days then rating should be 5 ?
+	Query : create or replace view Process_days_DATA as
+			select *,datediff('DAY',order_date,ship_date) as Process_day
+			from SALES_DATA;
+			Select *,
+				CASE
+					WHEN Process_day<=3 THEN '5'
+				END as Rating
+			from PROCESS_DAYS_DATA;
+	
+	--b. If process days are greater than 3 and less than or equal to 6 then rating should be 4 ?
+	Query : Select *,
+				CASE
+					WHEN Process_day>3 and Process_day<=6 THEN '4'
+				END as Rating
+			from PROCESS_DAYS_DATA;
+			
+	--c. If process days are greater than 6 and less than or equal to 10 then rating should be 3 ?
+	Query : Select *,
+				CASE
+					WHEN Process_day>6 and Process_day<=10 THEN '3'
+				END as Rating
+			from PROCESS_DAYS_DATA; 
+			
+	--d. If process days are greater than 10 then the rating should be 2 ?
+	Query : Select *,
+				CASE
+					WHEN Process_day>10 THEN '2'
+				END as Rating
+			from PROCESS_DAYS_DATA; 
+	
+	
